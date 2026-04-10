@@ -1,4 +1,8 @@
-require('dotenv').config();
+// Load .env ONLY in local environment
+if (process.env.NODE_ENV !== 'production') {
+  require('dotenv').config();
+}
+
 const express = require('express');
 const cors = require('cors');
 
@@ -13,8 +17,11 @@ app.use(express.json());
 app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
 
+// Health check (important for ECS / ALB)
 app.get('/health', (req, res) => res.send("OK"));
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on ${process.env.PORT}`);
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on ${PORT}`);
 });
