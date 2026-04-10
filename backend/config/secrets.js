@@ -6,7 +6,7 @@ const client = new SecretsManagerClient({
 
 async function getSecret() {
   const command = new GetSecretValueCommand({
-    SecretId: "my-db-secret"
+    SecretId: "nikbsoft-mysql-db-rds-secret-dev"
   });
 
   const response = await client.send(command);
