@@ -1,18 +1,23 @@
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
+const getSecret = require('./secrets');
 
-const db = mysql.createConnection({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
-});
+let connection;
 
-db.connect((err) => {
-  if (err) {
-    console.error("❌ DB connection failed:", err);
-  } else {
-    console.log("✅ Connected to MySQL");
+async function connectDB() {
+  if (!connection) {
+    const secret = await getSecret();
+
+    connection = await mysql.createConnection({
+      host: secret.host,
+      user: secret.username,
+      password: secret.password,
+      database: secret.database
+    });
+
+    console.log("✅ Connected to DB via Secrets Manager");
   }
-});
 
-module.exports = db;
+  return connection;
+}
+
+module.exports = connectDB;

@@ -1,23 +1,34 @@
-const db = require('../config/db');
+const connectDB = require('../config/db');
 
 // Get menu
-exports.getMenu = (req, res) => {
-  db.query('SELECT * FROM menu', (err, results) => {
-    if (err) return res.status(500).send(err);
-    res.json(results);
-  });
+exports.getMenu = async (req, res) => {
+  try {
+    const db = await connectDB();
+
+    const [rows] = await db.query('SELECT * FROM menu');
+
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching menu:", err);
+    res.status(500).send("Server Error");
+  }
 };
 
 // Add menu item
-exports.addMenuItem = (req, res) => {
-  const { name, price, category } = req.body;
+exports.addMenuItem = async (req, res) => {
+  try {
+    const { name, price, category } = req.body;
 
-  db.query(
-    'INSERT INTO menu (name, price, category) VALUES (?, ?, ?)',
-    [name, price, category],
-    (err) => {
-      if (err) return res.status(500).send(err);
-      res.send("Item added");
-    }
-  );
+    const db = await connectDB();
+
+    await db.query(
+      'INSERT INTO menu (name, price, category) VALUES (?, ?, ?)',
+      [name, price, category]
+    );
+
+    res.send("Item added");
+  } catch (err) {
+    console.error("Error adding item:", err);
+    res.status(500).send("Server Error");
+  }
 };
