@@ -29,6 +29,7 @@ pipeline {
         // -----------------------------------
         stage('Install Dependencies') {
             steps {
+                sh 'cd backend'
                 sh 'npm install'
             }
         }
@@ -39,6 +40,7 @@ pipeline {
         stage('Create Artifact') {
             steps {
                 sh '''
+                cd backend
                 zip -r backend.zip . \
                 -x "node_modules/*" \
                 -x ".git/*"
