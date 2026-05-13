@@ -18,7 +18,8 @@ pipeline {
         // -----------------------------------
         stage('Checkout') {
             steps {
-                git credentialsId: 'github-cred',
+                git branch: 'main',
+                credentialsId: 'github-cred',
                 url: 'https://github.com/Bsindhujareddy/nikbsoft-backend-app.git'
             }
         }
