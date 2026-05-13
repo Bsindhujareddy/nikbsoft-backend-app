@@ -1,0 +1,88 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_REGION = "us-east-1"
+
+        S3_BUCKET = "nikbsoft-codedeploy-artifacts"
+
+        APPLICATION_NAME = "nikbsoft-backend-codedeploy-application"
+
+        DEPLOYMENT_GROUP = "nikbsoft-backend-codedeploy-dmgroup"
+    }
+
+    stages {
+
+        // -----------------------------------
+        // Checkout Source Code
+        // -----------------------------------
+        stage('Checkout') {
+            steps {
+                git credentialsId: 'git-creds',
+                url: 'https://github.com/Bsindhujareddy/nikbsoft-backend-app.git'
+            }
+        }
+
+        // -----------------------------------
+        // Install Dependencies
+        // -----------------------------------
+        stage('Install Dependencies') {
+            steps {
+                sh 'npm install'
+            }
+        }
+
+        // -----------------------------------
+        // Create Deployment Artifact
+        // -----------------------------------
+        stage('Create Artifact') {
+            steps {
+                sh '''
+                zip -r backend.zip . \
+                -x "node_modules/*" \
+                -x ".git/*"
+                '''
+            }
+        }
+
+        // -----------------------------------
+        // Upload to S3
+        // -----------------------------------
+        stage('Upload Artifact to S3') {
+            steps {
+
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+
+                    sh '''
+                    aws s3 cp backend.zip s3://$S3_BUCKET/backend.zip --region $AWS_REGION
+                    '''
+                }
+            }
+        }
+
+        // -----------------------------------
+        // Trigger CodeDeploy
+        // -----------------------------------
+        stage('Deploy via CodeDeploy') {
+            steps {
+
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    credentialsId: 'aws-creds'
+                ]]) {
+
+                    sh '''
+                    aws deploy create-deployment \
+                      --application-name $APPLICATION_NAME \
+                      --deployment-group-name $DEPLOYMENT_GROUP \
+                      --s3-location bucket=$S3_BUCKET,bundleType=zip,key=backend.zip \
+                      --region $AWS_REGION
+                    '''
+                }
+            }
+        }
+    }
+}
