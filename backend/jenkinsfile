@@ -18,7 +18,7 @@ pipeline {
         // -----------------------------------
         stage('Checkout') {
             steps {
-                git credentialsId: 'git-creds',
+                git credentialsId: 'github-cred',
                 url: 'https://github.com/Bsindhujareddy/nikbsoft-backend-app.git'
             }
         }
@@ -71,7 +71,7 @@ pipeline {
 
                 withCredentials([[
                     $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-creds'
+                    credentialsId: 'aws-cred'
                 ]]) {
 
                     sh '''
