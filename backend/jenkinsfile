@@ -27,24 +27,26 @@ pipeline {
         // -----------------------------------
         // Install Dependencies
         // -----------------------------------
-        stage('Install Dependencies') {
-            steps {
-                sh 'cd backend'
-                sh 'npm install'
-            }
+       stage('Install Dependencies') {
+    steps {
+        dir('backend') {
+            sh 'npm install'
         }
+        }
+       }
 
         // -----------------------------------
         // Create Deployment Artifact
         // -----------------------------------
         stage('Create Artifact') {
             steps {
-                sh '''
-                cd backend
-                zip -r backend.zip . \
-                -x "node_modules/*" \
-                -x ".git/*"
-                '''
+                dir('backend') {
+                 sh '''
+                      zip -r backend.zip . \
+                     -x "node_modules/*" \
+                     -x ".git/*"
+                    '''
+                }
             }
         }
 
@@ -60,7 +62,7 @@ pipeline {
                 ]]) {
 
                     sh '''
-                    aws s3 cp backend.zip s3://$S3_BUCKET/backend.zip --region $AWS_REGION
+                    aws s3 cp backend/backend.zip s3://$S3_BUCKET/backend.zip --region $AWS_REGION
                     '''
                 }
             }
